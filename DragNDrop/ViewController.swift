@@ -10,6 +10,8 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    let transitionDuration = 0.5
+    
     var fileViewOriginalPoint: CGPoint!
     
     @IBOutlet weak var file: UIImageView! {
@@ -27,35 +29,11 @@ class ViewController: UIViewController {
     }
     
     @IBAction func resetImage(_ sender: Any) {
-        UIView.animate(withDuration: 0.5) {
-            self.file.alpha = 1
-            self.file.frame.origin = self.fileViewOriginalPoint
-        }
+        resetLayout()
     }
     
     override func viewDidLoad() {
         view.bringSubview(toFront: file)
-    }
-    
-    fileprivate func handlePan(_ view: UIView, _ sender: UIPanGestureRecognizer) {
-        
-        let transition = sender.translation(in: view)
-        
-        view.center = CGPoint(x: file.center.x + transition.x, y: file.center.y + transition.y)
-        
-        sender.setTranslation(CGPoint.zero, in: view)
-    }
-    
-    fileprivate func handleEndPan(_ fileView: UIView) {
-        if fileView.frame.intersects(trash.frame) {
-            UIView.animate(withDuration: 0.5, animations: {
-                self.file.alpha = 0
-            })
-        } else {
-            UIView.animate(withDuration: 0.5, animations: {
-                self.file.frame.origin = self.fileViewOriginalPoint
-            })
-        }
     }
     
     @objc func panGesture(sender: UIPanGestureRecognizer) {
@@ -63,9 +41,14 @@ class ViewController: UIViewController {
         let fileView = sender.view!
         
         switch sender.state {
-        case .changed, .began:
+        case .began:
             
-            handlePan(fileView, sender)
+            handleBeginPan()
+            
+            break
+        case .changed:
+            
+            handleChangedPan(fileView, sender)
             
             break
         case .ended:
@@ -76,6 +59,46 @@ class ViewController: UIViewController {
         default:
             break
         }
+    }
+}
+
+// Pan Handle Methods
+
+extension ViewController {
+    
+    fileprivate func handleBeginPan() {
+        return UIView.animate(withDuration: transitionDuration, animations: {
+            self.trash.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+            self.file.alpha = 0.5
+        })
+    }
+    
+    fileprivate func handleChangedPan(_ view: UIView, _ sender: UIPanGestureRecognizer) {
+        
+        let transition = sender.translation(in: view)
+        
+        view.center = CGPoint(x: file.center.x + transition.x, y: file.center.y + transition.y)
+        
+        sender.setTranslation(CGPoint.zero, in: view)
+    }
+    
+    fileprivate func handleEndPan(_ fileView: UIView) {
+        if fileView.frame.intersects(trash.frame) {
+            UIView.animate(withDuration: transitionDuration, animations: {
+                self.trash.transform = CGAffineTransform(scaleX: 1, y: 1)
+                self.file.alpha = 0
+            })
+        } else {
+            resetLayout()
+        }
+    }
+    
+    fileprivate func resetLayout() {
+        UIView.animate(withDuration: transitionDuration, animations: {
+            self.trash.transform = CGAffineTransform(scaleX: 1, y: 1)
+            self.file.frame.origin = self.fileViewOriginalPoint
+            self.file.alpha = 1
+        })
     }
 }
 
