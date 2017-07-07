@@ -75,9 +75,9 @@ extension ViewController {
     
     fileprivate func handleChangedPan(_ view: UIView, _ sender: UIPanGestureRecognizer) {
         
-        let transition = sender.translation(in: view)
+        let translation = sender.translation(in: view)
         
-        view.center = CGPoint(x: file.center.x + transition.x, y: file.center.y + transition.y)
+        view.center = CGPoint(x: file.center.x + translation.x, y: file.center.y + translation.y)
         
         sender.setTranslation(CGPoint.zero, in: view)
     }
